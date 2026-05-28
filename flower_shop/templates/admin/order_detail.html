@@ -1,0 +1,79 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Order #{{ order.id }} – Admin{% endblock %}
+{% block page_title %}Order #{{ order.id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .item-img { width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--border);transition:transform .25s; }
+  tr:hover .item-img { transform:scale(1.15); }
+  .status-form select { transition: border-color .2s,box-shadow .2s; }
+  .update-btn { transition:all .2s; }
+  .update-btn:hover { transform:translateY(-2px);box-shadow:0 4px 14px rgba(201,115,107,.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:820px;">
+  <div class="page-header">
+    <h2>Order #{{ order.id }}</h2>
+    <a href="{{ url_for('admin_orders') }}" class="btn btn-outline btn-sm">← Back to Orders</a>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.2rem;">
+    <div class="card">
+      <div class="card-title">👤 Customer Details</div>
+      <div style="font-size:.88rem;line-height:2;">
+        <div><strong>Name:</strong> {{ order.customer_name }}</div>
+        <div><strong>Email:</strong> {{ order.customer_email }}</div>
+        <div><strong>Address:</strong> {{ order.address }}</div>
+        <div><strong>Date:</strong> {{ order.created_at.strftime('%d %b %Y, %I:%M %p') if order.created_at else '—' }}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Order Status</div>
+      <div style="margin-bottom:1rem;">
+        <span class="badge badge-{{ order.status }}" style="font-size:.85rem;padding:.4rem 1rem;">{{ order.status }}</span>
+      </div>
+      <form method="POST" action="{{ url_for('admin_update_order', oid=order.id) }}" class="status-form" style="display:flex;gap:.6rem;align-items:center;">
+        <select name="status" style="flex:1;">
+          {% for s in ['Pending','Processing','Shipped','Delivered','Cancelled'] %}
+            <option {% if order.status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-primary btn-sm update-btn" type="submit">Update</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🌸 Items Ordered</div>
+    <table>
+      <thead><tr><th>Photo</th><th>Flower</th><th>Unit Price</th><th>Qty</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            {% if item.image %}
+              <img class="item-img" src="{{ url_for('static', filename='uploads/' ~ item.image) }}" alt="{{ item.flower_name }}">
+            {% else %}
+              <div class="item-img" style="display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:var(--bg);">🌸</div>
+            {% endif %}
+          </td>
+          <td style="font-weight:500;">{{ item.flower_name }}</td>
+          <td>₹{{ "%.2f"|format(item.price) }}</td>
+          <td>{{ item.qty }}</td>
+          <td style="color:var(--rose);font-weight:600;">₹{{ "%.2f"|format(item.price * item.qty) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" style="text-align:right;font-weight:600;padding-top:.8rem;">Grand Total:</td>
+          <td style="color:var(--rose);font-size:1.2rem;font-weight:700;padding-top:.8rem;">₹{{ "%.2f"|format(order.total) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}

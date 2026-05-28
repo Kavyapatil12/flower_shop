@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Checkout – Petal & Bloom{% endblock %}
+{% block extra_css %}
+<style>
+  .checkout-wrap{max-width:900px;margin:2.5rem auto;display:grid;grid-template-columns:1fr 320px;gap:2rem;padding:0 1.5rem;align-items:start;}
+  @media(max-width:720px){.checkout-wrap{grid-template-columns:1fr;}}
+  .checkout-box{background:var(--card);border-radius:16px;padding:2.2rem;box-shadow:var(--shadow);border:1px solid var(--border);animation:cardIn .5s ease;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  .checkout-box h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--deep);margin-bottom:1.5rem;}
+  .field-label{display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.5rem;}
+  textarea{width:100%;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;outline:none;resize:vertical;background:var(--input-bg);color:var(--text);margin-bottom:1.4rem;transition:border-color .2s,box-shadow .2s;}
+  textarea:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(201,115,107,.12);}
+  .pay-label{display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.8rem;}
+  .payment-options{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem;}
+  @media(max-width:400px){.payment-options{grid-template-columns:1fr;}}
+  .payment-card{border:2px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;transition:all .2s;text-align:center;background:var(--card);position:relative;user-select:none;}
+  .payment-card:hover{border-color:var(--rose);transform:translateY(-2px);box-shadow:0 6px 18px rgba(201,115,107,.18);}
+  .payment-card.selected{border-color:var(--rose);background:rgba(201,115,107,.06);}
+  .payment-card.selected::after{content:'✓';position:absolute;top:8px;right:10px;color:var(--rose);font-weight:700;}
+  .payment-card input[type="radio"]{display:none;}
+  .payment-card .pay-icon{font-size:1.8rem;display:block;margin-bottom:.4rem;}
+  .payment-card .pay-title{font-weight:700;font-size:.9rem;color:var(--text);display:block;}
+  .payment-card .pay-sub{font-size:.73rem;color:var(--muted);display:block;margin-top:.2rem;}
+  .cod-info,.online-info{border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.2rem;font-size:.88rem;animation:fadeIn .3s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+  .cod-info{background:rgba(255,179,0,.08);border-left:4px solid #ffb300;color:var(--muted);display:block;}
+  .online-info{background:rgba(82,143,240,.08);border-left:4px solid #528FF0;color:var(--muted);display:none;}
+  .place-btn{width:100%;padding:.9rem;font-size:1rem;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .25s;position:relative;overflow:hidden;}
+  .place-btn:active{transform:scale(.97);}
+  .cod-btn{background:var(--rose);color:white;}
+  .cod-btn:hover{background:var(--deep);transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,115,107,.4);}
+  .online-btn{background:linear-gradient(135deg,#528FF0,#3462C7);color:white;}
+  .online-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(82,143,240,.4);}
+  .summary-box{background:var(--card);border-radius:16px;padding:1.8rem;box-shadow:var(--shadow);position:sticky;top:84px;border:1px solid var(--border);}
+  .summary-box h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--deep);margin-bottom:1.2rem;}
+  .summary-item{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.88rem;}
+  .summary-total{display:flex;justify-content:space-between;font-size:1.15rem;font-weight:700;color:var(--text);border-top:2px solid var(--border);padding-top:1rem;margin-top:.5rem;}
+  .summary-total span:last-child{color:var(--rose);}
+  .secure-note{text-align:center;margin-top:1rem;font-size:.76rem;color:var(--muted);}
+  .loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:1rem;}
+  .loading-overlay.show{display:flex;}
+  .spinner{width:50px;height:50px;border:4px solid rgba(255,255,255,.2);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{color:white;font-size:1rem;font-weight:500;}
+</style>
+{% endblock %}
+
+{% block content %}
+<script>
+function selectPayment(type) {
+  var currentPayment = type;
+  document.getElementById('card-cod').classList.toggle('selected', type==='cod');
+  document.getElementById('card-online').classList.toggle('selected', type==='online');
+  document.getElementById('codInfo').style.display   = type==='cod'    ? 'block' : 'none';
+  document.getElementById('onlineInfo').style.display = type==='online' ? 'block' : 'none';
+  document.getElementById('codBtn').style.display    = type==='cod'    ? 'block' : 'none';
+  document.getElementById('onlineBtn').style.display = type==='online' ? 'block' : 'none';
+}
+</script>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Processing...</div>
+</div>
+
+<div class="checkout-wrap">
+  <div class="checkout-box">
+    <h2>🌺 Checkout</h2>
+    <form id="codForm" method="POST" action="{{ url_for('checkout') }}">
+      <input type="hidden" name="payment_method" value="cod">
+      <label class="field-label">📍 Delivery Address *</label>
+      <textarea id="addressField" name="address" rows="3" placeholder="Enter your full delivery address…" required></textarea>
+      <label class="pay-label">💳 Payment Method *</label>
+      <div class="payment-options">
+        <div class="payment-card selected" id="card-cod" onclick="selectPayment('cod')">
+          <input type="radio" name="payment_method" value="cod" checked>
+          <span class="pay-icon">💵</span>
+          <span class="pay-title">Cash on Delivery</span>
+          <span class="pay-sub">Pay when delivered</span>
+        </div>
+        <div class="payment-card" id="card-online" onclick="selectPayment('online')">
+          <input type="radio" name="payment_method" value="online">
+          <span class="pay-icon">💳</span>
+          <span class="pay-title">Online Payment</span>
+          <span class="pay-sub">Card / UPI / Net Banking</span>
+        </div>
+      </div>
+      <div class="cod-info" id="codInfo">💵 <strong>Cash on Delivery</strong> — Pay when your flowers arrive. No advance needed!</div>
+      <div class="online-info" id="onlineInfo">⚡ <strong>Online Payment</strong> — Pay securely via Razorpay. UPI, Cards, Net Banking.</div>
+      <button type="submit" class="place-btn cod-btn" id="codBtn">Place Order →</button>
+    </form>
+    <button type="button" class="place-btn online-btn" id="onlineBtn" style="display:none;margin-top:.5rem;" onclick="startRazorpay()">
+      ⚡ Pay ₹{{ "%.2f"|format(total) }} with Razorpay
+    </button>
+  </div>
+
+  <div class="summary-box">
+    <h3>Order Summary</h3>
+    {% for item in cart_items %}
+    <div class="summary-item">
+      <div>
+        <div style="font-weight:500;">🌸 {{ item.name }}</div>
+        <div style="font-size:.78rem;color:var(--muted);">x{{ item.qty }}</div>
+      </div>
+      <div style="color:var(--rose);font-weight:600;">₹{{ "%.2f"|format(item.subtotal) }}</div>
+    </div>
+    {% endfor %}
+    <div class="summary-total"><span>Total</span><span>₹{{ "%.2f"|format(total) }}</span></div>
+    <div class="secure-note">🔒 Secure checkout &nbsp;|&nbsp; 🚚 Free delivery</div>
+  </div>
+</div>
+
+<form id="razorpayForm" method="POST" action="{{ url_for('payment_verify') }}" style="display:none;">
+  <input type="hidden" name="razorpay_order_id"  id="rzp_order_id">
+  <input type="hidden" name="razorpay_payment_id" id="rzp_payment_id">
+  <input type="hidden" name="razorpay_signature"  id="rzp_signature">
+  <input type="hidden" name="delivery_address"    id="rzp_address">
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var currentPayment = 'cod';
+
+function selectPayment(type) {
+  currentPayment = type;
+  document.getElementById('card-cod').classList.toggle('selected', type==='cod');
+  document.getElementById('card-online').classList.toggle('selected', type==='online');
+  document.getElementById('codInfo').style.display   = type==='cod'    ? 'block' : 'none';
+  document.getElementById('onlineInfo').style.display = type==='online' ? 'block' : 'none';
+  document.getElementById('codBtn').style.display    = type==='cod'    ? 'block' : 'none';
+  document.getElementById('onlineBtn').style.display = type==='online' ? 'block' : 'none';
+}
+
+// Make selectPayment globally available immediately
+window.selectPayment = selectPayment;
+
+function startRazorpay() {
+  var address = document.getElementById('addressField').value.trim();
+  if (!address) { alert('Please enter your delivery address first.'); document.getElementById('addressField').focus(); return; }
+  document.getElementById('loadingOverlay').classList.add('show');
+  document.getElementById('loadingText').textContent = 'Creating order...';
+  fetch('{{ url_for("create_razorpay_order") }}', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({address: address, total: {{ total }}})
+  })
+  .then(function(res){ return res.json(); })
+  .then(function(data) {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    if (data.error) { alert('Error: ' + data.error); return; }
+    var options = {
+      key: '{{ razorpay_key_id }}',
+      amount: data.amount,
+      currency: 'INR',
+      name: 'Bloom & Petal',
+      description: 'Fresh Flowers Order',
+      order_id: data.order_id,
+      prefill: { name: '{{ customer_name }}', email: '{{ customer_email }}' },
+      theme: { color: '#c9736b' },
+      handler: function(response) {
+        document.getElementById('loadingOverlay').classList.add('show');
+        document.getElementById('loadingText').textContent = 'Verifying payment...';
+        document.getElementById('rzp_order_id').value   = response.razorpay_order_id;
+        document.getElementById('rzp_payment_id').value = response.razorpay_payment_id;
+        document.getElementById('rzp_signature').value  = response.razorpay_signature;
+        document.getElementById('rzp_address').value    = address;
+        document.getElementById('razorpayForm').submit();
+      },
+      modal: { ondismiss: function(){ document.getElementById('loadingOverlay').classList.remove('show'); } }
+    };
+    var rzp = new Razorpay(options);
+    rzp.on('payment.failed', function(r){ document.getElementById('loadingOverlay').classList.remove('show'); alert('Payment failed: ' + r.error.description); });
+    rzp.open();
+  })
+  .catch(function(err){ document.getElementById('loadingOverlay').classList.remove('show'); alert('Connection error. Please try again.'); });
+}
+</script>
+{% endblock %}

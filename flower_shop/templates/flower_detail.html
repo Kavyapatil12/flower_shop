@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}{{ flower.name }} – Petal & Bloom{% endblock %}
+
+{% block extra_css %}
+<style>
+  .detail-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin: 3rem auto;
+    max-width: 960px;
+    padding: 0 1.5rem;
+  }
+
+  @media (max-width: 680px) { .detail-wrap { grid-template-columns: 1fr; } }
+
+  .detail-img {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(61,43,31,.14);
+    background: linear-gradient(135deg, #fdf0eb, #f5e0d8);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .detail-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .detail-img .no-img { font-size: 7rem; }
+
+  .detail-info { display: flex; flex-direction: column; justify-content: center; gap: 1rem; }
+
+  .breadcrumb { font-size: .82rem; color: var(--muted); }
+  .breadcrumb a { color: var(--rose); text-decoration: none; }
+
+  .detail-cat {
+    font-size: .8rem;
+    color: var(--sage);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: .08em;
+    background: #eef5ee;
+    padding: .3rem .9rem;
+    border-radius: 20px;
+    display: inline-block;
+  }
+
+  .detail-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem;
+    line-height: 1.15;
+    color: var(--deep);
+  }
+
+  .detail-price {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--rose);
+  }
+
+  .detail-desc {
+    font-size: .95rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .stock-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .84rem;
+    font-weight: 500;
+  }
+
+  .stock-badge.ok     { color: #2e7d32; }
+  .stock-badge.low    { color: #e65100; }
+  .stock-badge.out    { color: #b71c1c; }
+
+  .add-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .qty-input {
+    width: 72px;
+    padding: .65rem .8rem;
+    border: 2px solid #e8ddd8;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  .qty-input:focus { border-color: var(--rose); }
+
+  .divider { border: none; border-top: 1px solid #f0e8e2; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-wrap">
+  <!-- Image -->
+  <div class="detail-img">
+    {% if flower.image %}
+      <img src="{{ url_for('static', filename='uploads/' ~ flower.image) }}" alt="{{ flower.name }}">
+    {% else %}
+      <div class="no-img">🌸</div>
+    {% endif %}
+  </div>
+
+  <!-- Info -->
+  <div class="detail-info">
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">Home</a> &rsaquo;
+      <a href="{{ url_for('shop') }}">Shop</a> &rsaquo;
+      {{ flower.name }}
+    </div>
+
+    <span class="detail-cat">{{ flower.category_name }}</span>
+    <h1 class="detail-title">{{ flower.name }}</h1>
+    <div class="detail-price">₹{{ "%.2f"|format(flower.price) }}</div>
+    <hr class="divider">
+    <p class="detail-desc">{{ flower.description or 'No description available.' }}</p>
+
+    <!-- Stock status -->
+    {% if flower.stock == 0 %}
+      <span class="stock-badge out">✗ Out of Stock</span>
+    {% elif flower.stock <= 5 %}
+      <span class="stock-badge low">⚠ Only {{ flower.stock }} left in stock</span>
+    {% else %}
+      <span class="stock-badge ok">✓ In Stock ({{ flower.stock }} available)</span>
+    {% endif %}
+
+    {% if flower.stock > 0 %}
+    <form class="add-form" action="{{ url_for('add_to_cart', fid=flower.id) }}" method="POST">
+      <input class="qty-input" type="number" name="qty" value="1" min="1" max="{{ flower.stock }}">
+      <button class="btn btn-primary" type="submit" style="font-size:.95rem;padding:.65rem 1.8rem;">
+        🛒 Add to Cart
+      </button>
+    </form>
+    {% else %}
+      <button class="btn btn-outline" disabled style="opacity:.5;cursor:not-allowed;">Out of Stock</button>
+    {% endif %}
+
+    <a href="{{ url_for('shop') }}" style="font-size:.85rem;color:var(--muted);text-decoration:none;">
+      ← Back to Shop
+    </a>
+  </div>
+</div>
+{% endblock %}

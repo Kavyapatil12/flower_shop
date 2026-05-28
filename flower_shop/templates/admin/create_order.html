@@ -1,0 +1,100 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Create Order – Admin{% endblock %}
+{% block page_title %}Create Order{% endblock %}
+
+{% block extra_css %}
+<style>
+  .flower-row { display:grid;grid-template-columns:1fr auto auto;gap:.6rem;align-items:center;margin-bottom:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .9rem;transition:border-color .2s; }
+  .flower-row:hover { border-color:var(--rose); }
+  .flower-row select,.flower-row input { margin-bottom:0; }
+  .flower-row input { width:80px; }
+  .total-box { background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;display:flex;justify-content:space-between;align-items:center;margin:1rem 0; }
+  .total-amount { font-size:1.6rem;font-weight:700;color:var(--rose);transition:all .3s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:640px;">
+  <div class="page-header">
+    <h2>Create Manual Order</h2>
+    <a href="{{ url_for('admin_orders') }}" class="btn btn-outline btn-sm">← Back</a>
+  </div>
+
+  <div class="card">
+    <form method="POST">
+      <div class="form-group">
+        <label>Customer *</label>
+        <select name="user_id" required>
+          <option value="">Select customer…</option>
+          {% for u in users %}
+            <option value="{{ u.id }}">{{ u.name }} ({{ u.email }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Delivery Address *</label>
+        <textarea name="address" rows="3" required placeholder="Full delivery address…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>🌸 Flowers</label>
+        <div id="flower-rows">
+          <div class="flower-row">
+            <select name="flower_id[]" onchange="calcTotal()">
+              <option value="">Select flower…</option>
+              {% for f in flowers %}
+                <option value="{{ f.id }}" data-price="{{ f.price }}">{{ f.name }} – ₹{{ "%.2f"|format(f.price) }} (stock: {{ f.stock }})</option>
+              {% endfor %}
+            </select>
+            <input type="number" name="qty[]" value="1" min="1" placeholder="Qty" onchange="calcTotal()">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">✕</button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" style="margin-top:.5rem;" onclick="addRow()">+ Add Flower</button>
+      </div>
+
+      <div class="total-box">
+        <span style="font-weight:600;color:var(--muted);">Total Amount</span>
+        <span class="total-amount" id="grandTotal">₹0.00</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:.75rem;">✅ Create Order</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const flowerTemplate = document.querySelector('.flower-row').outerHTML;
+
+  function addRow() {
+    const div = document.createElement('div');
+    div.innerHTML = flowerTemplate;
+    const row = div.firstChild;
+    row.querySelector('select').onchange = calcTotal;
+    row.querySelector('input').onchange = calcTotal;
+    document.getElementById('flower-rows').appendChild(row);
+  }
+
+  function removeRow(btn) {
+    const rows = document.querySelectorAll('.flower-row');
+    if (rows.length > 1) { btn.closest('.flower-row').remove(); calcTotal(); }
+  }
+
+  function calcTotal() {
+    let total = 0;
+    document.querySelectorAll('.flower-row').forEach(row => {
+      const sel = row.querySelector('select');
+      const qty = parseInt(row.querySelector('input').value) || 0;
+      const opt = sel.options[sel.selectedIndex];
+      if (opt && opt.dataset.price) total += parseFloat(opt.dataset.price) * qty;
+    });
+    const el = document.getElementById('grandTotal');
+    el.textContent = '₹' + total.toFixed(2);
+    el.style.transform = 'scale(1.1)';
+    setTimeout(() => el.style.transform = '', 200);
+  }
+</script>
+{% endblock %}

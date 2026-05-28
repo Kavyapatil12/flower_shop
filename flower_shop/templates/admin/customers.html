@@ -1,0 +1,52 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Customers – Admin{% endblock %}
+{% block page_title %}Customers{% endblock %}
+
+{% block extra_css %}
+<style>
+  tbody tr { animation: rowIn .3s ease both; cursor: pointer; }
+  @keyframes rowIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  tr:active td { background: rgba(201,115,107,.1) !important; }
+  .avatar { width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--deep));display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:white;transition:transform .2s; }
+  tr:hover .avatar { transform:scale(1.12); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>All Customers</h2>
+  <span style="color:var(--muted);font-size:.85rem;">{{ customers|length }} registered</span>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr><th></th><th>Name</th><th>Email</th><th>Orders</th><th>Total Spent</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for c in customers %}
+      <tr onclick="window.location='{{ url_for('admin_customer_detail', uid=c.id) }}'" title="View customer">
+        <td><div class="avatar">{{ c.name[0].upper() }}</div></td>
+        <td style="font-weight:500;">{{ c.name }}</td>
+        <td style="color:var(--muted);font-size:.85rem;">{{ c.email }}</td>
+        <td>{{ c.total_orders }}</td>
+        <td style="color:var(--rose);font-weight:600;">₹{{ "%.2f"|format(c.total_spent) }}</td>
+        <td onclick="event.stopPropagation()">
+          <a href="{{ url_for('admin_customer_detail', uid=c.id) }}" class="btn btn-outline btn-sm">View</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">No customers yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('tbody tr').forEach((tr, i) => {
+    tr.style.animationDelay = (i * 0.04) + 's';
+  });
+</script>
+{% endblock %}

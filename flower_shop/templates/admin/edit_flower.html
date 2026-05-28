@@ -1,0 +1,102 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Edit Flower – Admin{% endblock %}
+{% block page_title %}Edit Flower{% endblock %}
+
+{% block extra_css %}
+<style>
+  .img-box { width:130px;height:130px;border-radius:12px;object-fit:cover;border:2px solid var(--border);transition:border-color .3s,transform .3s; }
+  .img-box:hover { border-color:var(--rose);transform:scale(1.04); }
+  .new-preview { width:130px;height:130px;border-radius:12px;object-fit:cover;border:2px solid var(--sage);display:none;margin-top:.5rem; animation:popIn .3s ease; }
+  .new-preview.visible { display:block; }
+  @keyframes popIn { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+  .save-btn { transition: all .2s; }
+  .save-btn:hover { transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,115,107,.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:600px;">
+  <div class="page-header">
+    <h2>Edit: {{ flower.name }}</h2>
+    <a href="{{ url_for('admin_flowers') }}" class="btn btn-outline btn-sm">← Back</a>
+  </div>
+
+  <div class="card">
+    <form method="POST" enctype="multipart/form-data">
+
+      <!-- Image section -->
+      <div class="form-group">
+        <label>Current Image</label>
+        <div style="margin:.5rem 0;">
+          {% if flower.image %}
+            <img class="img-box" src="{{ url_for('static', filename='uploads/' ~ flower.image) }}" alt="{{ flower.name }}">
+          {% else %}
+            <div class="img-box" style="background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:3rem;">🌸</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📷 Replace Image</label>
+        <input type="file" name="image" accept="image/*" onchange="previewNew(this)">
+        <small style="color:var(--muted);font-size:.75rem;">Leave blank to keep existing image</small>
+        <img id="newPreview" class="new-preview" src="" alt="New Preview">
+        <span id="newLabel" style="display:none;font-size:.78rem;color:var(--sage);margin-left:.5rem;">✓ New image selected</span>
+      </div>
+
+      <div class="form-group">
+        <label>Flower Name *</label>
+        <input type="text" name="name" value="{{ flower.name }}" required>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" rows="3">{{ flower.description or '' }}</textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Price (₹) *</label>
+          <input type="number" name="price" step="0.01" min="0" value="{{ flower.price }}" required>
+        </div>
+        <div class="form-group">
+          <label>Stock *</label>
+          <input type="number" name="stock" min="0" value="{{ flower.stock }}" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Category *</label>
+        <select name="category_id" required>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if cat.id == flower.category_id %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display:flex;gap:.8rem;margin-top:1rem;">
+        <button type="submit" class="btn btn-primary save-btn" style="flex:1;">💾 Save Changes</button>
+        <a href="{{ url_for('admin_flowers') }}" class="btn btn-outline" style="flex:1;text-align:center;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewNew(input) {
+  const img = document.getElementById('newPreview');
+  const lbl = document.getElementById('newLabel');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      img.src = e.target.result;
+      img.classList.add('visible');
+      lbl.style.display = 'inline';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

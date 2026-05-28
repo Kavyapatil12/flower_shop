@@ -1,0 +1,67 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}{{ user.name }} – Admin{% endblock %}
+{% block page_title %}Customer Detail{% endblock %}
+
+{% block extra_css %}
+<style>
+  tbody tr { animation:rowIn .3s ease both;cursor:pointer; }
+  @keyframes rowIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  tr:active td { background:rgba(201,115,107,.1)!important; }
+  .avatar-big { width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--deep));display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:white;margin-bottom:1rem;transition:transform .3s; }
+  .avatar-big:hover { transform:scale(1.08) rotate(5deg); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:750px;">
+  <div class="page-header">
+    <h2>{{ user.name }}</h2>
+    <a href="{{ url_for('admin_customers') }}" class="btn btn-outline btn-sm">← Back</a>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.2rem;">
+    <div class="card" style="text-align:center;">
+      <div class="avatar-big" style="margin:0 auto 1rem;">{{ user.name[0].upper() }}</div>
+      <div style="font-size:.9rem;line-height:2;text-align:left;">
+        <div><strong>ID:</strong> #{{ user.id }}</div>
+        <div><strong>Name:</strong> {{ user.name }}</div>
+        <div><strong>Email:</strong> {{ user.email }}</div>
+        <div><strong>Total Orders:</strong> {{ orders|length }}</div>
+        <div><strong>Total Spent:</strong> <span style="color:var(--rose);font-weight:700;">₹{{ "%.2f"|format(orders|sum(attribute='total')) }}</span></div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;justify-content:center;gap:.8rem;">
+      <a href="{{ url_for('admin_create_order') }}" class="btn btn-primary">🛒 Create Order for Customer</a>
+      <a href="{{ url_for('admin_orders') }}" class="btn btn-outline">📦 View All Orders</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Order History</div>
+    {% if orders %}
+    <table>
+      <thead><tr><th>#</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr onclick="window.location='{{ url_for('admin_order_detail', oid=o.id) }}'">
+          <td style="color:var(--muted);">#{{ o.id }}</td>
+          <td style="font-size:.83rem;color:var(--muted);">{{ o.created_at.strftime('%d %b %Y') if o.created_at else '—' }}</td>
+          <td style="color:var(--rose);font-weight:600;">₹{{ "%.2f"|format(o.total) }}</td>
+          <td><span class="badge badge-{{ o.status }}">{{ o.status }}</span></td>
+          <td onclick="event.stopPropagation()"><a href="{{ url_for('admin_order_detail', oid=o.id) }}" class="btn btn-outline btn-sm">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--muted);text-align:center;padding:2rem;">No orders placed yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('tbody tr').forEach((tr,i) => { tr.style.animationDelay=(i*.04)+'s'; });
+</script>
+{% endblock %}

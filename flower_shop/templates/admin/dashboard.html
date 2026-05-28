@@ -1,0 +1,126 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Dashboard – Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stat-num { font-size: 2.2rem; font-weight: 700; margin-top: .3rem; transition: transform .3s; }
+  .stat-card:hover .stat-num { transform: scale(1.08); }
+  .progress-bar { height: 5px; background: var(--border); border-radius: 3px; margin-top: .5rem; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--rose); transition: width 1s ease; width: 0; }
+  .quick-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stat Cards -->
+<div class="grid-4" style="margin-bottom:1.5rem;">
+  <div class="card stat-card">
+    <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);">Total Orders</div>
+    <div class="stat-num" style="color:var(--deep);">{{ orders_count }}</div>
+    <div style="font-size:1.5rem;margin-top:.3rem;">📦</div>
+  </div>
+  <div class="card stat-card">
+    <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);">Revenue</div>
+    <div class="stat-num" style="color:var(--rose);">₹{{ "%.0f"|format(revenue) }}</div>
+    <div style="font-size:1.5rem;margin-top:.3rem;">💰</div>
+  </div>
+  <div class="card stat-card">
+    <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);">Customers</div>
+    <div class="stat-num" style="color:var(--sage);">{{ customers }}</div>
+    <div style="font-size:1.5rem;margin-top:.3rem;">👥</div>
+  </div>
+  <div class="card stat-card">
+    <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);">Low Stock</div>
+    <div class="stat-num" style="color:{% if low_stock > 0 %}#ffd54f{% else %}var(--sage){% endif %};">{{ low_stock }}</div>
+    <div style="font-size:1.5rem;margin-top:.3rem;">⚠️</div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-grid">
+  <a href="{{ url_for('admin_flowers') }}" class="action-card">
+    <div class="icon">🌸</div>
+    <div class="label">Add Flower</div>
+  </a>
+  <a href="{{ url_for('admin_create_order') }}" class="action-card">
+    <div class="icon">🛒</div>
+    <div class="label">Create Order</div>
+  </a>
+  <a href="{{ url_for('admin_sales') }}" class="action-card">
+    <div class="icon">📈</div>
+    <div class="label">Sales Report</div>
+  </a>
+</div>
+
+<div class="grid-2">
+  <!-- Recent Orders -->
+  <div class="card">
+    <div class="card-title">Recent Orders</div>
+    <table>
+      <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for o in recent %}
+        <tr class="clickable" onclick="window.location='{{ url_for('admin_order_detail', oid=o.id) }}'">
+          <td style="color:var(--muted);">#{{ o.id }}</td>
+          <td>{{ o.customer_name }}</td>
+          <td style="color:var(--rose);">₹{{ "%.0f"|format(o.total) }}</td>
+          <td><span class="badge badge-{{ o.status }}">{{ o.status }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="color:var(--muted);text-align:center;padding:2rem;">No orders yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div style="margin-top:1rem;">
+      <a href="{{ url_for('admin_orders') }}" class="btn btn-outline btn-sm">View All Orders →</a>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:1.2rem;">
+    <!-- Bestsellers -->
+    <div class="card">
+      <div class="card-title">🏆 Top Sellers</div>
+      {% for b in bestsellers %}
+      <div style="padding:.5rem 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem;">
+          <span style="font-size:.88rem;">{{ b.name }}</span>
+          <span style="font-size:.82rem;color:var(--sage);font-weight:600;">{{ b.sold }} sold</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" data-w="{{ (b.sold / (bestsellers[0].sold or 1) * 100)|int }}"></div>
+        </div>
+      </div>
+      {% else %}
+      <div style="color:var(--muted);font-size:.85rem;">No sales data yet</div>
+      {% endfor %}
+    </div>
+
+    <!-- Order Status -->
+    <div class="card">
+      <div class="card-title">Order Status</div>
+      {% for status, count in status_counts.items() %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;">
+        <span class="badge badge-{{ status }}">{{ status }}</span>
+        <span style="font-size:.9rem;font-weight:600;">{{ count }}</span>
+      </div>
+      {% else %}
+      <div style="color:var(--muted);font-size:.85rem;">No data</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Animate progress bars on load
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.progress-fill').forEach(bar => {
+      const w = bar.dataset.w;
+      setTimeout(() => bar.style.width = w + '%', 200);
+    });
+  });
+</script>
+{% endblock %}

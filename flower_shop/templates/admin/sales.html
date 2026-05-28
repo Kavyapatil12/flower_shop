@@ -1,0 +1,111 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Sales – Admin{% endblock %}
+{% block page_title %}Sales Report{% endblock %}
+
+{% block extra_css %}
+<style>
+  .revenue-card { text-align:center;transition:transform .25s,box-shadow .25s; }
+  .revenue-card:hover { transform:translateY(-5px);box-shadow:0 12px 36px rgba(0,0,0,.4); }
+  .revenue-num { font-size:2.2rem;font-weight:700;margin:.4rem 0;transition:transform .3s; }
+  .revenue-card:hover .revenue-num { transform:scale(1.07); }
+  .bar { height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:.4rem; }
+  .bar-fill { height:100%;border-radius:4px;background:linear-gradient(90deg,var(--rose),var(--deep));transition:width 1.2s ease;width:0; }
+  tbody tr { animation:rowIn .3s ease both; }
+  @keyframes rowIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Revenue Cards -->
+<div class="grid-3" style="margin-bottom:1.5rem;">
+  <div class="card revenue-card">
+    <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);">Total Revenue</div>
+    <div class="revenue-num" style="color:var(--rose);">₹{{ "%.2f"|format(total_revenue) }}</div>
+    <div style="font-size:.78rem;color:var(--muted);">All non-cancelled orders</div>
+  </div>
+  <div class="card revenue-card">
+    <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);">Delivered Revenue</div>
+    <div class="revenue-num" style="color:var(--sage);">₹{{ "%.2f"|format(delivered_revenue) }}</div>
+    <div style="font-size:.78rem;color:var(--muted);">Completed orders only</div>
+  </div>
+  <div class="card revenue-card">
+    <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);">Total Orders</div>
+    <div class="revenue-num" style="color:var(--deep);">{{ total_orders }}</div>
+    <div style="font-size:.78rem;color:var(--muted);">Excluding cancelled</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">📅 Monthly Revenue</div>
+    {% if monthly %}
+    <table>
+      <thead><tr><th>Month</th><th>Orders</th><th>Revenue</th></tr></thead>
+      <tbody>
+        {% for m in monthly %}
+        <tr>
+          <td style="font-weight:500;">{{ m.month }}</td>
+          <td>{{ m.orders }}</td>
+          <td style="color:var(--rose);font-weight:600;">₹{{ "%.2f"|format(m.revenue) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p style="color:var(--muted);">No data yet.</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏆 Top Customers</div>
+    {% if top_customers %}
+    <table>
+      <thead><tr><th>Name</th><th>Orders</th><th>Spent</th></tr></thead>
+      <tbody>
+        {% for c in top_customers %}
+        <tr>
+          <td><div style="font-weight:500;font-size:.88rem;">{{ c.name }}</div><div style="font-size:.75rem;color:var(--muted);">{{ c.email }}</div></td>
+          <td>{{ c.orders }}</td>
+          <td style="color:var(--rose);font-weight:600;">₹{{ "%.2f"|format(c.spent) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p style="color:var(--muted);">No data yet.</p>{% endif %}
+  </div>
+</div>
+
+<!-- Flower Sales -->
+<div class="card" style="margin-top:1.2rem;">
+  <div class="card-title">🌸 Flower Sales Breakdown</div>
+  {% if flower_sales %}
+  {% set max_earn = flower_sales[0].earnings or 1 %}
+  <table>
+    <thead><tr><th>Rank</th><th>Flower</th><th>Price</th><th>Units Sold</th><th>Earnings</th><th style="width:20%">Performance</th></tr></thead>
+    <tbody>
+      {% for f in flower_sales %}
+      <tr>
+        <td style="font-weight:700;color:var(--muted);">{{ loop.index }}</td>
+        <td style="font-weight:500;">{{ f.name }}</td>
+        <td>₹{{ "%.2f"|format(f.price) }}</td>
+        <td>{{ f.units_sold }}</td>
+        <td style="color:var(--rose);font-weight:600;">₹{{ "%.2f"|format(f.earnings) }}</td>
+        <td>
+          <div class="bar"><div class="bar-fill" data-w="{{ (f.earnings/max_earn*100)|int }}"></div></div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p style="color:var(--muted);padding:1rem 0;">No sales data yet.</p>{% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.bar-fill').forEach(b => {
+      setTimeout(() => b.style.width = b.dataset.w + '%', 200);
+    });
+  });
+  document.querySelectorAll('tbody tr').forEach((tr,i) => { tr.style.animationDelay=(i*.04)+'s'; });
+</script>
+{% endblock %}

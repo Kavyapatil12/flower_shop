@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin – Bloom & Petal{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #0f0c0a;
+      --panel:  #1a1410;
+      --card:   #231d18;
+      --border: #332a22;
+      --rose:   #c9736b;
+      --deep:   #e8c4b8;
+      --sage:   #8aaa8c;
+      --muted:  #7a6a60;
+      --text:   #e8ddd8;
+      --white:  #ffffff;
+      --radius: 12px;
+    }
+
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { width: 220px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; height: 100vh; overflow-y: auto; }
+    .sidebar-brand { padding: 1.5rem 1.2rem; border-bottom: 1px solid var(--border); }
+    .sidebar-brand h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--deep); }
+    .sidebar-brand small { font-size: .72rem; color: var(--muted); display: block; margin-top: .2rem; }
+    .sidebar-nav { flex: 1; padding: 1rem 0; }
+
+    .nav-item a {
+      display: flex; align-items: center; gap: .7rem;
+      padding: .65rem 1.2rem; color: var(--muted);
+      text-decoration: none; font-size: .88rem;
+      transition: all .2s; border-left: 3px solid transparent;
+      position: relative; overflow: hidden;
+    }
+    .nav-item a::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(201,115,107,0.15);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform .25s ease;
+    }
+    .nav-item a:hover::after, .nav-item a.active::after { transform: scaleX(1); }
+    .nav-item a:hover, .nav-item a.active { color: var(--text); border-left-color: var(--rose); }
+    .nav-item a:active { transform: scale(0.97); }
+
+    .nav-section { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding: .8rem 1.2rem .3rem; }
+    .sidebar-footer { padding: 1rem 1.2rem; border-top: 1px solid var(--border); }
+    .sidebar-footer a { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .2s; display: block; margin-bottom: .4rem; }
+    .sidebar-footer a:hover { color: var(--rose); }
+
+    /* ── MAIN ── */
+    .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: var(--panel); border-bottom: 1px solid var(--border); padding: .9rem 1.8rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+    .topbar-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--deep); }
+    .topbar-right { font-size: .83rem; color: var(--muted); }
+    .content { padding: 1.8rem; flex: 1; }
+
+    /* ── FLASH ── */
+    .flashes { position: fixed; top: 60px; right: 1.2rem; z-index: 999; display: flex; flex-direction: column; gap: .5rem; max-width: 320px; }
+    .flash { padding: .75rem 1.1rem; border-radius: 10px; font-size: .85rem; font-weight: 500; animation: slideIn .3s ease; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+    .flash.success { background: #1a3a1c; color: #81c784; border-left: 3px solid #4caf50; }
+    .flash.danger  { background: #3a1a1a; color: #ef9a9a; border-left: 3px solid #e53935; }
+    .flash.warning { background: #3a2e00; color: #ffd54f; border-left: 3px solid #ffb300; }
+    .flash.info    { background: #0d2340; color: #90caf9; border-left: 3px solid #1e88e5; }
+    @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+
+    /* ── CARDS ── */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem; transition: box-shadow .25s, transform .2s; }
+    .card:hover { box-shadow: 0 8px 32px rgba(0,0,0,.35); }
+    .card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--deep); margin-bottom: 1rem; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: .5rem 1.2rem; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: .85rem; font-weight: 500;
+      cursor: pointer; border: none; text-decoration: none;
+      transition: all .18s cubic-bezier(.4,0,.2,1);
+      position: relative; overflow: hidden; user-select: none;
+    }
+    /* ripple */
+    .btn::before {
+      content: ''; position: absolute;
+      width: 0; height: 0;
+      background: rgba(255,255,255,0.25);
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
+      transition: width .4s ease, height .4s ease, opacity .4s ease;
+      opacity: 0;
+    }
+    .btn:active::before { width: 200px; height: 200px; opacity: 1; transition: 0s; }
+    .btn:active { transform: scale(0.95); }
+
+    .btn-primary { background: var(--rose); color: var(--white); }
+    .btn-primary:hover { background: #b5625a; box-shadow: 0 4px 16px rgba(201,115,107,.4); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--rose); color: var(--rose); background: rgba(201,115,107,.06); }
+    .btn-danger  { background: #7f1d1d; color: #fca5a5; }
+    .btn-danger:hover { background: #991b1b; }
+    .btn-sage    { background: var(--sage); color: var(--white); }
+    .btn-sage:hover { background: #789a7a; box-shadow: 0 4px 14px rgba(138,170,140,.35); }
+    .btn-sm      { padding: .3rem .8rem; font-size: .78rem; }
+
+    /* ── FORM ── */
+    label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .3rem; font-weight: 500; }
+    input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="file"], select, textarea {
+      width: 100%; padding: .65rem .9rem;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: .88rem;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+      margin-bottom: .2rem;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(201,115,107,.12); }
+    select option { background: var(--panel); }
+    .form-group { margin-bottom: 1rem; }
+
+    /* ── TABLE ── */
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: .6rem .8rem; border-bottom: 1px solid var(--border); }
+    td { padding: .75rem .8rem; border-bottom: 1px solid rgba(51,42,34,.5); font-size: .88rem; vertical-align: middle; }
+    tr { transition: background .15s; }
+    tr:hover td { background: rgba(201,115,107,.04); }
+
+    /* clickable rows */
+    tr.clickable { cursor: pointer; }
+    tr.clickable:active td { background: rgba(201,115,107,.12); }
+
+    /* ── STATUS BADGES ── */
+    .badge { display: inline-block; padding: .25rem .7rem; border-radius: 20px; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    .badge-Pending    { background: rgba(255,179,0,.15); color: #ffd54f; }
+    .badge-Processing { background: rgba(30,136,229,.15); color: #90caf9; }
+    .badge-Shipped    { background: rgba(57,73,171,.15); color: #9fa8da; }
+    .badge-Delivered  { background: rgba(76,175,80,.15); color: #a5d6a7; }
+    .badge-Cancelled  { background: rgba(229,57,53,.15); color: #ef9a9a; }
+
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .page-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--deep); }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
+    @media (max-width: 900px) { .grid-4 { grid-template-columns: 1fr 1fr; } .grid-3 { grid-template-columns: 1fr 1fr; } }
+
+    /* ── RIPPLE ON INTERACTIVE ELEMENTS ── */
+    a.ripple, button.ripple { position: relative; overflow: hidden; }
+    @keyframes rippleAnim {
+      0%   { transform: translate(-50%,-50%) scale(0); opacity: .6; }
+      100% { transform: translate(-50%,-50%) scale(4); opacity: 0; }
+    }
+    .ripple-circle {
+      position: absolute; border-radius: 50%;
+      width: 60px; height: 60px;
+      background: rgba(255,255,255,0.25);
+      animation: rippleAnim .5s ease-out forwards;
+      pointer-events: none;
+    }
+
+    /* stat card hover lift */
+    .stat-card { transition: transform .2s, box-shadow .2s; cursor: default; }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,.4); }
+
+    /* quick action card */
+    .action-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem; text-align: center; text-decoration: none; color: var(--text);
+      display: block; transition: all .2s; position: relative; overflow: hidden;
+    }
+    .action-card:hover { transform: translateY(-3px); border-color: var(--rose); box-shadow: 0 8px 28px rgba(201,115,107,.2); color: var(--deep); }
+    .action-card:active { transform: scale(0.97); }
+    .action-card .icon { font-size: 2rem; margin-bottom: .4rem; }
+    .action-card .label { font-size: .88rem; font-weight: 500; }
+
+    /* select focus pulse */
+    select:focus { animation: focusPulse .3s ease; }
+    @keyframes focusPulse { 0% { box-shadow: 0 0 0 0 rgba(201,115,107,.4); } 100% { box-shadow: 0 0 0 6px rgba(201,115,107,0); } }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h1>🌸 Bloom & Petal</h1>
+    <small>Admin Panel</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item"><a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a></div>
+    <div class="nav-section">Catalogue</div>
+    <div class="nav-item"><a href="{{ url_for('admin_flowers') }}">🌸 Manage Flowers</a></div>
+    <div class="nav-section">Commerce</div>
+    <div class="nav-item"><a href="{{ url_for('admin_orders') }}">📦 All Orders</a></div>
+    <div class="nav-item"><a href="{{ url_for('admin_create_order') }}">➕ Create Order</a></div>
+    <div class="nav-item"><a href="{{ url_for('admin_sales') }}">💰 Sales Report</a></div>
+    <div class="nav-section">People</div>
+    <div class="nav-item"><a href="{{ url_for('admin_customers') }}">👥 Customers</a></div>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="{{ url_for('index') }}" target="_blank">🌐 View Store</a>
+    <a href="{{ url_for('admin_logout') }}">🚪 Logout</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+    <div class="topbar-right">👑 Admin</div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flashes">
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="content">{% block content %}{% endblock %}</div>
+</div>
+
+<script>
+  // Auto-hide flash messages
+  setTimeout(() => {
+    document.querySelectorAll('.flash').forEach(el => {
+      el.style.transition = 'opacity .5s, transform .5s';
+      el.style.opacity = '0'; el.style.transform = 'translateX(20px)';
+      setTimeout(() => el.remove(), 500);
+    });
+  }, 3500);
+
+  // Mark active nav link
+  const path = window.location.pathname;
+  document.querySelectorAll('.nav-item a').forEach(a => {
+    if (a.getAttribute('href') === path) a.classList.add('active');
+  });
+
+  // Ripple effect on ALL buttons and links with .btn class
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn');
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const circle = document.createElement('span');
+    circle.className = 'ripple-circle';
+    circle.style.left = (e.clientX - rect.left) + 'px';
+    circle.style.top  = (e.clientY - rect.top) + 'px';
+    btn.appendChild(circle);
+    setTimeout(() => circle.remove(), 600);
+  });
+
+  // Ripple on sidebar nav links
+  document.querySelectorAll('.nav-item a').forEach(a => {
+    a.addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const circle = document.createElement('span');
+      circle.className = 'ripple-circle';
+      circle.style.left = (e.clientX - rect.left) + 'px';
+      circle.style.top  = (e.clientY - rect.top) + 'px';
+      this.appendChild(circle);
+    });
+  });
+</script>
+</body>
+</html>

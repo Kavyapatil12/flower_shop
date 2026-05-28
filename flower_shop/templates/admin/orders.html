@@ -1,0 +1,73 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Orders – Admin{% endblock %}
+{% block page_title %}Orders{% endblock %}
+
+{% block extra_css %}
+<style>
+  .filter-btn { transition: all .2s; }
+  .filter-btn:hover { transform: translateY(-2px); }
+  .filter-btn:active { transform: scale(0.95); }
+  tbody tr { animation: rowIn .3s ease both; cursor: pointer; }
+  @keyframes rowIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  tr:active td { background: rgba(201,115,107,.1) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>All Orders</h2>
+  <a href="{{ url_for('admin_create_order') }}" class="btn btn-primary btn-sm">+ Create Order</a>
+</div>
+
+<!-- Status filter -->
+<div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.2rem;">
+  <a href="{{ url_for('admin_orders') }}" class="btn btn-sm filter-btn {% if not status_filter %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+  {% for s in ['Pending','Processing','Shipped','Delivered','Cancelled'] %}
+    <a href="{{ url_for('admin_orders', status=s) }}"
+       class="btn btn-sm filter-btn {% if status_filter == s %}btn-primary{% else %}btn-outline{% endif %}">{{ s }}</a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>#</th><th>Customer</th><th>Email</th><th>Total</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr onclick="window.location='{{ url_for('admin_order_detail', oid=o.id) }}'" title="Click to view details">
+        <td style="color:var(--muted);">#{{ o.id }}</td>
+        <td style="font-weight:500;">{{ o.customer_name }}</td>
+        <td style="color:var(--muted);font-size:.82rem;">{{ o.customer_email }}</td>
+        <td style="color:var(--rose);font-weight:600;">₹{{ "%.2f"|format(o.total) }}</td>
+        <td style="font-size:.82rem;color:var(--muted);">{{ o.created_at.strftime('%d %b %Y') if o.created_at else '—' }}</td>
+        <td><span class="badge badge-{{ o.status }}">{{ o.status }}</span></td>
+        <td onclick="event.stopPropagation()">
+          <div style="display:flex;gap:.4rem;align-items:center;">
+            <a href="{{ url_for('admin_order_detail', oid=o.id) }}" class="btn btn-outline btn-sm">View</a>
+            <form method="POST" action="{{ url_for('admin_update_order', oid=o.id) }}" style="display:inline-flex;gap:.4rem;align-items:center;">
+              <select name="status" style="padding:.28rem .5rem;font-size:.75rem;width:auto;margin:0;">
+                {% for s in ['Pending','Processing','Shipped','Delivered','Cancelled'] %}
+                  <option {% if o.status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-sage btn-sm" type="submit">✓</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;">No orders found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('tbody tr').forEach((tr, i) => {
+    tr.style.animationDelay = (i * 0.03) + 's';
+  });
+</script>
+{% endblock %}

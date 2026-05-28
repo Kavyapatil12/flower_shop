@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Petal & Bloom{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   #faf6f1;
+      --blush:   #e8c4b8;
+      --rose:    #c9736b;
+      --deep:    #7a3f3a;
+      --sage:    #8aaa8c;
+      --bark:    #3d2b1f;
+      --muted:   #9e8e85;
+      --white:   #ffffff;
+      --shadow:  0 4px 24px rgba(61,43,31,.10);
+      --radius:  12px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--bark);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--white);
+      border-bottom: 1px solid #f0e8e2;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(61,43,31,.06);
+    }
+
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.55rem;
+      font-weight: 600;
+      color: var(--deep);
+      text-decoration: none;
+      letter-spacing: .02em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: .9rem;
+      font-weight: 500;
+      transition: color .2s;
+    }
+
+    .nav-links a:hover { color: var(--rose); }
+
+    .nav-cart {
+      background: var(--rose);
+      color: var(--white) !important;
+      padding: .45rem 1rem;
+      border-radius: 20px;
+      font-size: .85rem !important;
+    }
+
+    .nav-cart:hover { background: var(--deep); color: var(--white) !important; }
+
+    /* ── FLASH ── */
+    .flashes {
+      position: fixed;
+      top: 72px;
+      right: 1.5rem;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      max-width: 340px;
+    }
+
+    .flash {
+      padding: .8rem 1.2rem;
+      border-radius: var(--radius);
+      font-size: .88rem;
+      font-weight: 500;
+      animation: slideIn .3s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .flash.success  { background: #eaf5eb; color: #2d6a30; border-left: 4px solid #4caf50; }
+    .flash.danger   { background: #fdecea; color: #9b2335; border-left: 4px solid #e53935; }
+    .flash.warning  { background: #fff8e1; color: #7a5c00; border-left: 4px solid #ffb300; }
+    .flash.info     { background: #e8f4fd; color: #1565c0; border-left: 4px solid #1e88e5; }
+
+    @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+
+    /* ── UTILITY ── */
+    .container { max-width: 1180px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+    .btn {
+      display: inline-block;
+      padding: .6rem 1.4rem;
+      border-radius: 30px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .88rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all .2s;
+    }
+
+    .btn-primary   { background: var(--rose); color: var(--white); }
+    .btn-primary:hover { background: var(--deep); }
+    .btn-outline   { background: transparent; border: 1.5px solid var(--rose); color: var(--rose); }
+    .btn-outline:hover { background: var(--rose); color: var(--white); }
+    .btn-sage      { background: var(--sage); color: var(--white); }
+    .btn-sage:hover { opacity: .85; }
+    .btn-sm        { padding: .4rem 1rem; font-size: .82rem; }
+    .btn-danger    { background: #e53935; color: var(--white); }
+    .btn-danger:hover { background: #b71c1c; }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: .82rem;
+      border-top: 1px solid #f0e8e2;
+      margin-top: 3rem;
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="{{ url_for('index') }}">🌸 Petal & Bloom</a>
+  <ul class="nav-links">
+    <li><a href="{{ url_for('index') }}">Home</a></li>
+    <li><a href="{{ url_for('shop') }}">Shop</a></li>
+    {% if session.get('user_id') %}
+      <li><a href="{{ url_for('orders') }}">My Orders</a></li>
+      <li><a href="{{ url_for('logout') }}">Logout ({{ session.user_name }})</a></li>
+    {% else %}
+      <li><a href="{{ url_for('login') }}">Login</a></li>
+      <li><a href="{{ url_for('register') }}">Register</a></li>
+    {% endif %}
+    <li><a class="nav-cart" href="{{ url_for('cart') }}">🛒 Cart</a></li>
+  </ul>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flashes">
+      {% for cat, msg in messages %}
+        <div class="flash {{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<footer>
+  &copy; 2024 Petal & Bloom Flower Shop. All rights reserved.
+</footer>
+
+<script>
+  // auto-dismiss flash messages
+  setTimeout(() => {
+    document.querySelectorAll('.flash').forEach(el => {
+      el.style.transition = 'opacity .5s';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 500);
+    });
+  }, 4000);
+</script>
+</body>
+</html>

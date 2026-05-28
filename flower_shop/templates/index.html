@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% block title %}Petal & Bloom – Fresh Flowers Delivered{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hero {
+    background: linear-gradient(135deg, #fdf0eb 0%, #f5e6e0 60%, #e8d5cd 100%);
+    padding: 5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '🌸🌺🌼🌷🌻';
+    font-size: 8rem;
+    position: absolute;
+    top: -20px;
+    left: -40px;
+    opacity: .08;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    color: var(--deep);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 520px;
+    margin: 0 auto 2rem;
+  }
+
+  .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+  /* Categories strip */
+  .cat-strip {
+    display: flex;
+    gap: .8rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 2rem 1.5rem 1rem;
+  }
+
+  .cat-pill {
+    padding: .5rem 1.4rem;
+    border-radius: 30px;
+    border: 1.5px solid var(--blush);
+    color: var(--deep);
+    text-decoration: none;
+    font-size: .88rem;
+    font-weight: 500;
+    transition: all .2s;
+    background: var(--white);
+  }
+
+  .cat-pill:hover { background: var(--rose); color: var(--white); border-color: var(--rose); }
+
+  /* Section heading */
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-head h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.9rem;
+    color: var(--deep);
+  }
+
+  /* Flower grid */
+  .flower-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .flower-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform .25s, box-shadow .25s;
+  }
+
+  .flower-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(61,43,31,.14);
+  }
+
+  .flower-card img {
+    width: 100%;
+    height: 210px;
+    object-fit: cover;
+    background: #f7ede8;
+  }
+
+  .flower-card .no-img {
+    width: 100%;
+    height: 210px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    background: linear-gradient(135deg, #fdf0eb, #f5e0d8);
+  }
+
+  .card-body { padding: 1.1rem 1.2rem 1.3rem; }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--bark);
+    margin-bottom: .25rem;
+  }
+
+  .card-cat {
+    font-size: .78rem;
+    color: var(--sage);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: .6rem;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: .8rem;
+  }
+
+  .price {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--rose);
+  }
+
+  /* Promise strip */
+  .promises {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 3rem 0;
+    text-align: center;
+  }
+
+  .promise {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 2rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+
+  .promise .icon { font-size: 2.2rem; margin-bottom: .8rem; }
+  .promise h3 { font-size: 1rem; font-weight: 600; color: var(--deep); margin-bottom: .3rem; }
+  .promise p  { font-size: .84rem; color: var(--muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <h1>Fresh Blooms,<br><em>Delivered with Love</em></h1>
+  <p>Curated bouquets and seasonal flowers brought straight to your door.</p>
+  <div class="hero-actions">
+    <a href="{{ url_for('shop') }}" class="btn btn-primary">Shop Flowers</a>
+    <a href="{{ url_for('register') }}" class="btn btn-outline">Join Us</a>
+  </div>
+</section>
+
+<!-- Categories -->
+{% if categories %}
+<div class="cat-strip">
+  <a href="{{ url_for('shop') }}" class="cat-pill">All</a>
+  {% for cat in categories %}
+    <a href="{{ url_for('shop', category=cat.name) }}" class="cat-pill">{{ cat.name }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Featured Flowers -->
+<div class="container">
+  <div class="section-head">
+    <h2>Featured Blooms</h2>
+    <a href="{{ url_for('shop') }}" class="btn btn-outline btn-sm">View All →</a>
+  </div>
+
+  <div class="flower-grid">
+    {% for f in flowers %}
+    <div class="flower-card">
+      <a href="{{ url_for('flower_detail', fid=f.id) }}">
+        {% if f.image %}
+          <img src="{{ url_for('static', filename='uploads/' ~ f.image) }}" alt="{{ f.name }}">
+        {% else %}
+          <div class="no-img">🌸</div>
+        {% endif %}
+      </a>
+      <div class="card-body">
+        <div class="card-cat">{{ f.category_name if f.category_name else '' }}</div>
+        <div class="card-title">{{ f.name }}</div>
+        <p style="font-size:.84rem;color:var(--muted);line-height:1.5;">
+          {{ f.description[:80] ~ '…' if f.description and f.description|length > 80 else f.description }}
+        </p>
+        <div class="card-footer">
+          <span class="price">₹{{ "%.2f"|format(f.price) }}</span>
+          <form action="{{ url_for('add_to_cart', fid=f.id) }}" method="POST" style="display:inline">
+            <input type="hidden" name="qty" value="1">
+            <button class="btn btn-primary btn-sm" type="submit">Add to Cart</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+      <p style="color:var(--muted);">No flowers available right now. Check back soon!</p>
+    {% endfor %}
+  </div>
+
+  <!-- Promises -->
+  <div class="promises">
+    <div class="promise"><div class="icon">🌿</div><h3>Farm Fresh</h3><p>Sourced directly from local growers every morning.</p></div>
+    <div class="promise"><div class="icon">🚚</div><h3>Same-Day Delivery</h3><p>Order before noon for delivery today.</p></div>
+    <div class="promise"><div class="icon">💐</div><h3>Custom Bouquets</h3><p>Personal arrangements for every occasion.</p></div>
+    <div class="promise"><div class="icon">♻️</div><h3>Eco Packaging</h3><p>100% compostable wrapping and materials.</p></div>
+  </div>
+</div>
+{% endblock %}

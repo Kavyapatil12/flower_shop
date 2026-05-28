@@ -1,0 +1,149 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Flowers – Admin{% endblock %}
+{% block page_title %}Manage Flowers{% endblock %}
+
+{% block extra_css %}
+<style>
+  .flower-thumb { width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--border);transition:transform .2s; }
+  tr:hover .flower-thumb { transform: scale(1.12); }
+  .stock-ok  { color:#81c784;font-weight:600; }
+  .stock-low { color:#ffd54f;font-weight:600; }
+  .stock-out { color:#ef9a9a;font-weight:600; }
+  .flower-no-img { width:52px;height:52px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;transition:transform .2s; }
+  tr:hover .flower-no-img { transform: scale(1.12); }
+
+  /* Modal */
+  .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;align-items:center;justify-content:center; }
+  .modal-overlay.open { display:flex; animation: fadeIn .2s ease; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .modal { background:#1a1410;border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto; animation: slideUp .25s ease; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:none} }
+  .modal h3 { font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--deep);margin-bottom:1.2rem; }
+
+  /* Image preview */
+  .img-preview { width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid var(--rose);display:none;margin-top:.5rem; }
+  .img-preview.visible { display:block;animation:popIn .3s ease; }
+  @keyframes popIn { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+
+  /* Row enter animation */
+  tbody tr { animation: rowIn .3s ease both; }
+  @keyframes rowIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:none} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Flower Catalogue</h2>
+  <button class="btn btn-primary" onclick="document.getElementById('addModal').classList.add('open')">
+    + Add Flower
+  </button>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>Photo</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for f in flowers %}
+      <tr>
+        <td>
+          {% if f.image %}
+            <img class="flower-thumb" src="{{ url_for('static', filename='uploads/' ~ f.image) }}" alt="{{ f.name }}" onerror="this.style.display='none'">
+          {% else %}
+            <div class="flower-no-img">🌸</div>
+          {% endif %}
+        </td>
+        <td style="font-weight:500;">{{ f.name }}<br><span style="font-size:.78rem;color:var(--muted);">{{ f.description[:45] if f.description else '' }}{% if f.description and f.description|length > 45 %}…{% endif %}</span></td>
+        <td><span style="font-size:.78rem;color:var(--sage);">{{ f.cat }}</span></td>
+        <td style="color:var(--rose);font-weight:600;">₹{{ "%.2f"|format(f.price) }}</td>
+        <td>
+          {% if f.stock == 0 %}<span class="stock-out">✗ Out</span>
+          {% elif f.stock < 5 %}<span class="stock-low">⚠ {{ f.stock }}</span>
+          {% else %}<span class="stock-ok">✓ {{ f.stock }}</span>{% endif %}
+        </td>
+        <td>
+          <a href="{{ url_for('admin_edit_flower', fid=f.id) }}" class="btn btn-outline btn-sm">✏️ Edit</a>
+          <a href="{{ url_for('admin_delete_flower', fid=f.id) }}"
+             class="btn btn-danger btn-sm"
+             onclick="return confirm('Delete {{ f.name }}?')">🗑 Delete</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">No flowers yet. Add your first one!</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Add Flower Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h3>🌸 Add New Flower</h3>
+    <form method="POST" action="{{ url_for('admin_add_flower') }}" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>Flower Name *</label>
+        <input type="text" name="name" required placeholder="e.g. Red Rose">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" rows="3" placeholder="Brief description…"></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Price (₹) *</label>
+          <input type="number" name="price" step="0.01" min="0" required placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label>Stock *</label>
+          <input type="number" name="stock" min="0" required placeholder="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Category *</label>
+        <select name="category_id" required>
+          <option value="">Select category…</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>📷 Flower Image</label>
+        <input type="file" name="image" accept="image/*" onchange="previewImg(this,'addPreview')">
+        <img id="addPreview" class="img-preview" src="" alt="Preview">
+      </div>
+      <div style="display:flex;gap:.8rem;margin-top:.5rem;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Add Flower 🌸</button>
+        <button type="button" class="btn btn-outline" style="flex:1;"
+                onclick="document.getElementById('addModal').classList.remove('open')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Close modal on overlay click
+  document.getElementById('addModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+
+  // Image preview
+  function previewImg(input, previewId) {
+    const img = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { img.src = e.target.result; img.classList.add('visible'); };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  // Stagger row animations
+  document.querySelectorAll('tbody tr').forEach((tr, i) => {
+    tr.style.animationDelay = (i * 0.04) + 's';
+  });
+</script>
+{% endblock %}

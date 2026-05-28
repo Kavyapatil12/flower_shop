@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login – Petal & Bloom</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a0a0a 0%,#3d1a10 40%,#6b2a20 100%);overflow:hidden;}
+    .petals{position:fixed;inset:0;pointer-events:none;z-index:0;}
+    .petal{position:absolute;animation:fall linear infinite;opacity:.15;}
+    @keyframes fall{0%{transform:translateY(-60px) rotate(0deg);opacity:.2;}100%{transform:translateY(110vh) rotate(360deg);opacity:0;}}
+    .card{background:#fff;border-radius:24px;width:100%;max-width:440px;box-shadow:0 32px 80px rgba(0,0,0,.35);position:relative;z-index:1;overflow:hidden;animation:cardIn .55s cubic-bezier(.4,0,.2,1);}
+    @keyframes cardIn{from{opacity:0;transform:translateY(32px) scale(.96)}to{opacity:1;transform:none}}
+    .tab-header{display:grid;grid-template-columns:1fr 1fr;background:#faf6f1;border-bottom:2px solid #f0e8e2;}
+    .tab-btn{padding:1.1rem;text-align:center;cursor:pointer;font-size:.92rem;font-weight:600;color:#9e8e85;border:none;background:transparent;transition:all .25s;position:relative;font-family:'DM Sans',sans-serif;}
+    .tab-btn .icon{font-size:1.4rem;display:block;margin-bottom:.25rem;transition:transform .3s;}
+    .tab-btn:hover .icon{transform:scale(1.2) rotate(8deg);}
+    .tab-btn:hover{color:#7a3f3a;}
+    .tab-btn.active{background:#fff;color:#7a3f3a;border-bottom:3px solid #c9736b;}
+    .tab-btn.active .icon{transform:scale(1.15);}
+    .panels{position:relative;overflow:hidden;}
+    .panel{padding:2.2rem 2.5rem 2.5rem;display:none;animation:panelIn .35s ease;}
+    .panel.active{display:block;}
+    @keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .logo{text-align:center;font-size:2.6rem;margin-bottom:.4rem;animation:bounce 2.5s ease infinite;}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+    .logo.wiggle{animation:wiggle 3s ease infinite;}
+    @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+    h2{font-family:'Cormorant Garamond',serif;font-size:1.75rem;text-align:center;color:#7a3f3a;margin-bottom:.25rem;}
+    .subtitle{text-align:center;color:#9e8e85;font-size:.83rem;margin-bottom:1.8rem;}
+    .flash{padding:.7rem 1rem;border-radius:8px;font-size:.84rem;margin-bottom:1rem;animation:slideIn .3s ease;}
+    @keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+    .flash.success{background:#eaf5eb;color:#2d6a30;border-left:3px solid #4caf50;}
+    .flash.danger{background:#fdecea;color:#9b2335;border-left:3px solid #e53935;}
+    .flash.warning{background:#fff8e1;color:#7a5c00;border-left:3px solid #ffb300;}
+    .flash.info{background:#e8f4fd;color:#1565c0;border-left:3px solid #1e88e5;}
+    .form-group{margin-bottom:1rem;}
+    label{display:block;font-size:.8rem;font-weight:500;color:#3d2b1f;margin-bottom:.35rem;}
+    input[type="email"],input[type="password"],input[type="text"]{width:100%;padding:.72rem 1rem;border:1.5px solid #e8ddd8;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:#3d2b1f;background:#faf6f1;outline:none;transition:border-color .2s,box-shadow .2s,transform .15s;}
+    input:focus{border-color:#c9736b;box-shadow:0 0 0 3px rgba(201,115,107,.14);transform:scale(1.01);}
+    .submit-btn{width:100%;padding:.82rem;background:#c9736b;color:#fff;border:none;border-radius:30px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;margin-top:.4rem;}
+    .submit-btn:hover{background:#7a3f3a;transform:translateY(-3px);box-shadow:0 8px 24px rgba(201,115,107,.45);}
+    .submit-btn:active{transform:scale(.96);}
+    .admin-btn{background:linear-gradient(135deg,#3d1a10,#7a3f3a);}
+    .admin-btn:hover{background:linear-gradient(135deg,#1a0a0a,#3d1a10);}
+    .admin-badge{display:inline-block;background:linear-gradient(135deg,#3d1a10,#c9736b);color:#fff;font-size:.7rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;}
+    .panel-footer{text-align:center;margin-top:1.2rem;font-size:.83rem;color:#9e8e85;}
+    .panel-footer a{color:#c9736b;text-decoration:none;font-weight:500;}
+    .panel-footer a:hover{opacity:.75;}
+    .divider{display:flex;align-items:center;gap:.8rem;margin:.8rem 0;color:#c8b8b2;font-size:.78rem;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#f0e8e2;}
+    .back-store{display:block;text-align:center;margin-top:1rem;font-size:.8rem;color:#9e8e85;text-decoration:none;transition:color .2s;}
+    .back-store:hover{color:#c9736b;}
+  </style>
+</head>
+<body>
+<div class="petals" id="petals"></div>
+
+<div class="card">
+  <div class="tab-header">
+    <button class="tab-btn active" onclick="switchTab('customer',this)">
+      <span class="icon">🌸</span>Customer Login
+    </button>
+    <button class="tab-btn" onclick="switchTab('admin',this)">
+      <span class="icon">👑</span>Admin Login
+    </button>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div style="padding:1rem 2.5rem 0;">
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="panels">
+    <!-- CUSTOMER -->
+    <div class="panel active" id="panel-customer">
+      <div class="logo">🌸</div>
+      <h2>Welcome Back</h2>
+      <p class="subtitle">Sign in to your Petal & Bloom account</p>
+      <form method="POST" action="{{ url_for('login') }}">
+        <input type="hidden" name="login_type" value="customer">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" name="email" placeholder="you@example.com" required autofocus>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••" required>
+        </div>
+        <button class="submit-btn" type="submit">Sign In →</button>
+      </form>
+      <div class="panel-footer">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></div>
+      <div class="divider">or</div>
+      <a href="{{ url_for('index') }}" class="back-store">← Browse as guest</a>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="panel" id="panel-admin">
+      <div class="logo wiggle">👑</div>
+      <h2>Admin Access</h2>
+      <p class="subtitle">Bloom & Petal Control Panel</p>
+      <div style="text-align:center;margin-bottom:1.2rem;">
+        <span class="admin-badge">🔐 Restricted Access</span>
+      </div>
+      <form method="POST" action="{{ url_for('admin_login') }}">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="admin" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••" required>
+        </div>
+        <button class="submit-btn admin-btn" type="submit">Access Admin Panel →</button>
+      </form>
+      <div class="panel-footer">Default: <strong>admin</strong> / <strong>admin123</strong></div>
+      <div class="divider">or</div>
+      <a href="{{ url_for('index') }}" class="back-store">← Back to Store</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const emojis = ['🌸','🌺','🌷','🌼','🌻'];
+  const container = document.getElementById('petals');
+  for(let i=0;i<22;i++){
+    const p=document.createElement('div');
+    p.className='petal';
+    p.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.left=Math.random()*100+'vw';
+    p.style.fontSize=(.7+Math.random()*1)+'rem';
+    p.style.animationDuration=(6+Math.random()*9)+'s';
+    p.style.animationDelay=(Math.random()*10)+'s';
+    container.appendChild(p);
+  }
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+    const fi = document.getElementById('panel-'+tab).querySelector('input');
+    if(fi) setTimeout(()=>fi.focus(), 50);
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.get('tab')==='admin'){
+    document.querySelectorAll('.tab-btn')[1].click();
+  }
+</script>
+</body>
+</html>

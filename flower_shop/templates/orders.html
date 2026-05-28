@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}My Orders – Petal & Bloom{% endblock %}
+
+{% block extra_css %}
+<style>
+  .orders-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--deep);
+    margin-bottom: 1.5rem;
+  }
+
+  .order-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .order-id { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; color: var(--deep); }
+  .order-date { font-size: .82rem; color: var(--muted); margin-top: .2rem; }
+  .order-address { font-size: .85rem; color: var(--muted); margin-top: .3rem; max-width: 280px; }
+  .order-total { font-size: 1.2rem; font-weight: 700; color: var(--rose); }
+
+  .status-badge {
+    display: inline-block;
+    padding: .3rem .9rem;
+    border-radius: 20px;
+    font-size: .78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  .status-Pending    { background: #fff8e1; color: #7a5c00; }
+  .status-Processing { background: #e8f4fd; color: #1565c0; }
+  .status-Shipped    { background: #e8f0fe; color: #3949ab; }
+  .status-Delivered  { background: #eaf5eb; color: #2d6a30; }
+  .status-Cancelled  { background: #fdecea; color: #9b2335; }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="orders-title">My Orders</h1>
+
+  {% if orders %}
+    {% for o in orders %}
+    <div class="order-card">
+      <div>
+        <div class="order-id">Order #{{ o.id }}</div>
+        <div class="order-date">{{ o.created_at.strftime('%d %b %Y, %I:%M %p') if o.created_at else '—' }}</div>
+        <div class="order-address">📍 {{ o.address }}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="order-total">₹{{ "%.2f"|format(o.total) }}</div>
+        <span class="status-badge status-{{ o.status }}">{{ o.status }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="empty-state">
+    <div style="font-size:3rem;margin-bottom:1rem;">📦</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--deep);">No orders yet</h3>
+    <p style="margin:.5rem 0 1.5rem;">Start shopping and your orders will appear here.</p>
+    <a href="{{ url_for('shop') }}" class="btn btn-primary">Shop Now</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

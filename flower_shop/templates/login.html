@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Login – Petal & Bloom{% endblock %}
+
+{% block extra_css %}
+<style>
+  .auth-wrap {
+    min-height: calc(100vh - 130px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #fdf0eb 0%, #f5e6e0 100%);
+  }
+
+  .auth-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 2.8rem 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 16px 60px rgba(61,43,31,.14);
+  }
+
+  .auth-logo {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: .5rem;
+  }
+
+  .auth-card h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.9rem;
+    text-align: center;
+    color: var(--deep);
+    margin-bottom: .3rem;
+  }
+
+  .auth-subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: .85rem;
+    margin-bottom: 2rem;
+  }
+
+  .form-group { margin-bottom: 1.1rem; }
+
+  label { display: block; font-size: .83rem; font-weight: 500; color: var(--bark); margin-bottom: .4rem; }
+
+  input[type="email"],
+  input[type="password"],
+  input[type="text"] {
+    width: 100%;
+    padding: .75rem 1rem;
+    border: 1.5px solid #e8ddd8;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .92rem;
+    outline: none;
+    transition: border-color .2s;
+    background: var(--cream);
+  }
+
+  input:focus { border-color: var(--rose); }
+
+  .auth-btn {
+    width: 100%;
+    padding: .8rem;
+    font-size: .95rem;
+    margin-top: .5rem;
+  }
+
+  .auth-footer {
+    text-align: center;
+    margin-top: 1.3rem;
+    font-size: .84rem;
+    color: var(--muted);
+  }
+
+  .auth-footer a { color: var(--rose); text-decoration: none; font-weight: 500; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">🌸</div>
+    <h1>Welcome Back</h1>
+    <p class="auth-subtitle">Sign in to your Petal & Bloom account</p>
+
+    <form method="POST">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button class="btn btn-primary auth-btn" type="submit">Sign In</button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="{{ url_for('register') }}">Register here</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
